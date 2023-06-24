@@ -1,0 +1,87 @@
+int pinosensor = 4;
+int pinolampada = 5;
+int pinofumaca = 3;
+int pinobip = 7;
+
+bool ativo = false;
+bool todosDesligados = false;
+unsigned long inicioAtivacao;
+unsigned long inicioativacao;
+bool lampadaAtiva = false;
+bool fumacaAtiva = false;
+bool somAtiva = false;
+
+void setup()
+{
+    pinMode(pinosensor, INPUT);
+    pinMode(pinolampada, OUTPUT);
+    pinMode(pinofumaca, OUTPUT);
+    pinMode(pinobip, OUTPUT);
+    Serial.begin(9600);
+    delay(1000);
+
+    while(Serial.available() > 0){
+        Serial.read();
+    }
+}
+
+void loop()
+{  
+     if (digitalRead(pinosensor))  
+     {
+            if(!ativo)
+            {
+                  ativo = true;
+                  inicioAtivacao = millis();
+                  digitalWrite(pinolampada, HIGH);
+                  digitalWrite(pinofumaca, HIGH);
+                  digitalWrite(pinobip, HIGH);
+
+                  tone(pinobip, 1000);
+                  Serial.println("Sensor ativado");
+            }
+            ativo = false;
+      }     
+
+    if (Serial.available() > 0)
+    {
+        String Comando = Serial.readStringUntil('\n');
+
+        int pino = Comando.toInt();
+                  
+        if(pino == pinolampada)
+        {
+          lampadaAtiva = !lampadaAtiva;
+          digitalWrite(pinolampada, lampadaAtiva ? HIGH : LOW);
+        }
+
+        if(pino == pinofumaca)
+        {
+          fumacaAtiva = !fumacaAtiva;
+          digitalWrite(pinofumaca, fumacaAtiva ? HIGH : LOW);
+        }
+
+        if (pino == pinobip)
+        {
+            somAtiva = !somAtiva;
+            if (somAtiva)
+            {
+                tone(pinobip, 1000);
+            }
+            else
+            {
+                noTone(pinobip);
+                digitalWrite(pinobip, LOW);
+            }
+        }
+
+        if (pino == pinosensor)
+        {
+            todosDesligados = true;
+            digitalWrite(pinolampada, LOW);
+            digitalWrite(pinofumaca, LOW);
+            digitalWrite(pinobip, LOW);
+            tone(pinobip, 1000000);
+        }
+    }
+}
